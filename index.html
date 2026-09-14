@@ -491,6 +491,30 @@ const URL_WEB_APP =
     );
   }
 };
+
+window.hasilScanGoogle = function (data) {
+  console.log("RESPONS APPS SCRIPT:", data);
+
+  const tombol = document.getElementById("btnKirim");
+  if (tombol) tombol.disabled = false;
+
+  if (data && data.status === "OK") {
+    tampilkanStatus(
+      "SCAN BERHASIL\n" +
+      data.namaBarang +
+      "\nStok sekarang: " +
+      data.stokSesudah,
+      "success"
+    );
+  } else {
+    tampilkanStatus(
+      data && data.message
+        ? data.message
+        : "Respons Apps Script tidak valid.",
+      "error"
+    );
+  }
+};
   </script>
 
 </body>
