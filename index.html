@@ -553,13 +553,9 @@ const URL_WEB_APP =
     }
 
 function kirimKeWebApp(kodeBarcode) {
-  if (!cekURLWebApp()) {
-    return;
-  }
-
   const namaAdmin = admin.value.trim();
   const jenis = kategori.value;
-  const qty = jumlah.value;
+  const qty = Number(jumlah.value || 1);
 
   if (!namaAdmin) {
     tampilPesan("Nama admin wajib diisi.", "error");
@@ -567,16 +563,18 @@ function kirimKeWebApp(kodeBarcode) {
     return;
   }
 
-  if (!qty || Number(qty) < 1) {
-    tampilPesan("Jumlah harus lebih besar dari 0.", "error");
+  if (qty < 1) {
+    tampilPesan("Jumlah harus minimal 1.", "error");
     jumlah.focus();
     return;
   }
 
-  tampilPesan("Mengirim data scan ke Google Sheets...", "success");
+  tampilPesan(
+    "Mengirim data scan ke Google Sheets...",
+    "success"
+  );
 
-  const namaCallback =
-    "hasilScan_" + Date.now();
+  const namaCallback = "hasilScan_" + Date.now();
 
   const script = document.createElement("script");
 
@@ -584,26 +582,30 @@ function kirimKeWebApp(kodeBarcode) {
     URL_WEB_APP +
     "?barcode=" + encodeURIComponent(kodeBarcode) +
     "&admin=" + encodeURIComponent(namaAdmin) +
+    "&jumlah=" + encodeURIComponent(qty) +
     "&callback=" + encodeURIComponent(namaCallback);
 
   window[namaCallback] = function(hasil) {
     if (hasil.status === "OK") {
       tampilPesan(
-        "BERHASIL\n" +
+        "SCAN BERHASIL\n\n" +
+        "Barcode: " + hasil.barcode + "\n" +
         "Barang: " + hasil.namaBarang + "\n" +
         "Kategori: " + hasil.kategori + "\n" +
+        "Jumlah: " + hasil.jumlah + "\n" +
         "Stok: " + hasil.stokSebelum +
         " menjadi " + hasil.stokSesudah,
         "success"
       );
 
       tambahRiwayat(
-        kodeBarcode,
-        jenis,
-        namaAdmin,
-        qty,
+        hasil.barcode,
+        hasil.kategori,
+        hasil.admin,
+        hasil.jumlah,
         hasil.message
       );
+
     } else {
       tampilPesan(
         hasil.message || "Scan gagal.",
@@ -620,7 +622,8 @@ function kirimKeWebApp(kodeBarcode) {
 
   script.onerror = function() {
     tampilPesan(
-      "Gagal menghubungi Google Apps Script. Periksa URL Web App dan izin akses.",
+      "Gagal menghubungi Google Apps Script.\n" +
+      "Periksa URL Web App dan izin deployment.",
       "error"
     );
 
