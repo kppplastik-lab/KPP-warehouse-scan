@@ -469,6 +469,28 @@ const URL_WEB_APP =
           kirimScan();
         }
       });
+
+    window.hasilScanGoogle = function(data) {
+  console.log("Respons Apps Script:", data);
+
+  const tombol = document.getElementById("btnKirim");
+  if (tombol) tombol.disabled = false;
+
+  if (data.status === "OK") {
+    tampilkanStatus(
+      "Berhasil! " +
+      data.namaBarang +
+      " | Stok: " +
+      data.stokSesudah,
+      "success"
+    );
+  } else {
+    tampilkanStatus(
+      data.message || "Data tidak berhasil diproses.",
+      "error"
+    );
+  }
+};
   </script>
 
 </body>
