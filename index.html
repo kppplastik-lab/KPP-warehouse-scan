@@ -293,74 +293,67 @@ const URL_WEB_APP =
     }
 
     function kirimScan() {
-      const barcode = document
-        .getElementById("barcode")
-        .value
-        .trim();
+  const barcode = document.getElementById("barcode").value.trim();
+  const admin =
+    document.getElementById("admin").value.trim() || "ADMIN";
+  const jenis = document.getElementById("jenis").value;
+  const jumlah = Math.max(
+    1,
+    Number(document.getElementById("jumlah").value || 1)
+  );
 
-      const admin = document
-        .getElementById("admin")
-        .value
-        .trim() || "ADMIN";
+  if (!barcode) {
+    tampilkanStatus("Barcode belum diisi.", "warning");
+    document.getElementById("barcode").focus();
+    return;
+  }
 
-      const jenis = document
-        .getElementById("jenis")
-        .value;
+  const btn = document.getElementById("btnKirim");
+  btn.disabled = true;
 
-      const jumlah = Math.max(
-        1,
-        Number(document.getElementById("jumlah").value || 1)
-      );
+  const namaCallback = "callbackScan_" + Date.now();
 
-      if (!barcode) {
-        tampilkanStatus(
-          "Barcode belum diisi.",
-          "warning"
-        );
+  window[namaCallback] = function(data) {
+    delete window[namaCallback];
 
-        document.getElementById("barcode").focus();
-        return;
-      }
-
-      tampilkanStatus(
-        "Mengirim data scan ke Google Sheets..."
-      );
-
-      document.getElementById("btnKirim").disabled = true;
-
-const url =
-  URL_WEB_APP +
-  "?barcode=" + encodeURIComponent(barcode) +
-  "&admin=" + encodeURIComponent(admin) +
-  "&jenis=" + encodeURIComponent(jenis) +
-  "&jumlah=" + encodeURIComponent(jumlah) +
-  "&callback=hasilScanGoogle";
-
-      const scriptLama =
-        document.getElementById("jsonpScan");
-
-      if (scriptLama) {
-        scriptLama.remove();
-      }
-
-      const script = document.createElement("script");
-
-      script.id = "jsonpScan";
-      script.src = url;
-
-      script.onerror = function () {
-        document.getElementById("btnKirim").disabled = false;
-
-        tampilkanStatus(
-          "Gagal menghubungi Google Apps Script.\n" +
-          "Periksa URL Web App dan izin deployment.",
-          "error"
-        );
-      };
-
-      document.body.appendChild(script);
+    if (script) {
+      script.remove();
     }
 
+    btn.disabled = false;
+    hasilScanGoogle(data);
+  };
+
+  const url =
+    URL_WEB_APP +
+    "?barcode=" + encodeURIComponent(barcode) +
+    "&admin=" + encodeURIComponent(admin) +
+    "&jenis=" + encodeURIComponent(jenis) +
+    "&jumlah=" + encodeURIComponent(jumlah) +
+    "&callback=" + encodeURIComponent(namaCallback) +
+    "&t=" + Date.now();
+
+  tampilkanStatus("Mengirim data scan...");
+
+  const script = document.createElement("script");
+  script.id = "jsonpScan";
+  script.src = url;
+
+  script.onerror = function() {
+    delete window[namaCallback];
+    script.remove();
+    btn.disabled = false;
+
+    tampilkanStatus(
+      "Respons API gagal dimuat.\n\nURL yang dipanggil:\n" + url,
+      "error"
+    );
+
+    console.error("Gagal memuat URL Apps Script:", url);
+  };
+
+  document.body.appendChild(script);
+}
     function hasilScanGoogle(data) {
       document.getElementById("btnKirim").disabled = false;
 
