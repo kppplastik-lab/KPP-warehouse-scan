@@ -414,16 +414,63 @@
       return true;
     }
 
-    async function bukaKamera() {
-      hapusPesan();
+async function kirimKeWebApp(kodeBarcode) {
+  if (!cekURLWebApp()) {
+    return;
+  }
 
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        tampilPesan(
-          "Kamera tidak didukung browser ini. Gunakan Google Chrome melalui HTTPS.",
-          "error"
-        );
-        return;
-      }
+  const namaAdmin = admin.value.trim();
+  const jenis = kategori.value;
+  const qty = jumlah.value;
+
+  if (!namaAdmin) {
+    tampilPesan("Nama admin wajib diisi.", "error");
+    admin.focus();
+    return;
+  }
+
+  if (!qty || Number(qty) < 1) {
+    tampilPesan("Jumlah harus lebih besar dari 0.", "error");
+    jumlah.focus();
+    return;
+  }
+
+  const url =
+    URL_WEB_APP +
+    "?barcode=" + encodeURIComponent(kodeBarcode) +
+    "&jenis=" + encodeURIComponent(jenis) +
+    "&admin=" + encodeURIComponent(namaAdmin) +
+    "&jumlah=" + encodeURIComponent(qty);
+
+  tampilPesan("Mengirim data ke Google Sheets...", "success");
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      mode: "cors",
+      redirect: "follow",
+      cache: "no-store"
+    });
+
+    const hasil = await response.text();
+
+    if (hasil.includes("OK") || hasil.includes("SUKSES")) {
+      tampilPesan(hasil, "success");
+      tambahRiwayat(kodeBarcode, jenis, namaAdmin, qty, hasil);
+    } else {
+      tampilPesan(hasil, "error");
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    tampilPesan(
+      "Web App tidak dapat dihubungi.\n" +
+      "Cek kembali URL /exec dan akses deployment Apps Script.",
+      "error"
+    );
+  }
+}
 
       try {
         scannerModal.style.display = "block";
