@@ -6,8 +6,6 @@
 
   <title>ERP KPP - Scanner Warehouse</title>
 
- <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
   <style>
     * {
       box-sizing: border-box;
@@ -17,196 +15,220 @@
       margin: 0;
       min-height: 100vh;
       font-family: Arial, sans-serif;
-      background: #061b2b;
+      background: #031b2b;
       color: white;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      margin: auto;
     }
 
     .header {
       text-align: center;
-      padding: 35px 15px 25px;
+      margin-bottom: 28px;
     }
 
     .header h1 {
-      margin: 0;
       color: #00bfff;
-      font-size: 36px;
-      font-weight: 800;
-      letter-spacing: 1px;
+      font-size: 42px;
+      margin: 10px 0;
+      font-weight: 900;
     }
 
     .header p {
-      margin-top: 12px;
-      color: #d8edf7;
       font-size: 20px;
-    }
-
-    .container {
-      width: 94%;
-      max-width: 650px;
-      margin: auto;
+      color: #d5eaf5;
+      margin: 0;
     }
 
     .panel {
-      border: 1px solid #008fc4;
-      border-radius: 20px;
-      padding: 25px;
-      background: #09283b;
-      box-shadow: 0 0 15px rgba(0, 174, 239, 0.08);
-    }
-
-    .form-group {
-      margin-bottom: 20px;
+      border: 2px solid #009bd0;
+      border-radius: 22px;
+      padding: 24px;
+      background: #082c40;
+      box-shadow: 0 0 15px rgba(0, 180, 255, 0.15);
     }
 
     label {
       display: block;
-      margin-bottom: 10px;
+      margin-top: 18px;
+      margin-bottom: 8px;
       font-size: 20px;
       font-weight: bold;
-      color: #cdeeff;
+      color: #d8efff;
     }
 
     input,
     select {
       width: 100%;
-      padding: 17px;
-      border-radius: 12px;
-      border: 2px solid #008fc4;
-      background: #061b2b;
+      height: 58px;
+      border: 2px solid #009bd0;
+      border-radius: 13px;
+      background: #031b2b;
       color: white;
-      font-size: 18px;
+      font-size: 19px;
+      padding: 0 15px;
       outline: none;
     }
 
     input:focus,
     select:focus {
-      border-color: #00d9ff;
+      border-color: #00eaff;
     }
 
-    input::placeholder {
-      color: #8295a1;
-    }
-
-    .button {
+    button {
       width: 100%;
-      padding: 17px;
-      margin-top: 10px;
+      min-height: 58px;
       border: none;
-      border-radius: 12px;
-      color: white;
+      border-radius: 13px;
+      margin-top: 18px;
       font-size: 20px;
       font-weight: bold;
       cursor: pointer;
+      color: white;
+      touch-action: manipulation;
     }
 
-    .button-scan {
-      background: #00bf72;
-    }
-
-    .button-focus {
-      background: #08a9e0;
-    }
-
-    .button-stop {
-      background: #e53935;
-    }
-
-    .button:active {
+    button:active {
       transform: scale(0.98);
     }
 
-    #cameraBox {
-      display: none;
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #00aeea;
-      border-radius: 15px;
-      background: #061b2b;
+    .btn-scan {
+      background: #00bd70;
     }
 
-    #reader {
-      width: 100%;
-      overflow: hidden;
-      border-radius: 12px;
+    .btn-focus {
+      background: #08a9e0;
     }
 
-    .status {
-      display: none;
+    .btn-close {
+      background: #d9363e;
+    }
+
+    .btn-send {
+      background: #1478ff;
+    }
+
+    .history {
+      margin-top: 25px;
+      border: 2px solid #009bd0;
+      border-radius: 22px;
+      padding: 22px;
+      background: #082c40;
+    }
+
+    .history h2 {
+      color: #00bfff;
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .history-item {
+      border-bottom: 1px solid #27718d;
+      padding: 12px 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .message {
       margin-top: 18px;
       padding: 15px;
       border-radius: 10px;
       font-size: 16px;
-      line-height: 1.5;
-      background: #12394d;
-      border: 1px solid #008fc4;
+      display: none;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .status.success {
+    .success {
       display: block;
-      background: #064b35;
-      border-color: #00d084;
+      background: #075d3b;
+      border: 1px solid #00d982;
     }
 
-    .status.error {
+    .error {
       display: block;
-      background: #5a1b1b;
-      border-color: #ff5252;
+      background: #651d25;
+      border: 1px solid #ff6875;
     }
 
-    .status.info {
-      display: block;
-      background: #12394d;
-      border-color: #00aeea;
+    .scanner-modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      padding: 15px;
     }
 
-    .history-panel {
-      margin-top: 25px;
-      margin-bottom: 30px;
+    .scanner-box {
+      width: 100%;
+      max-width: 550px;
+      margin: auto;
+      background: #082c40;
+      border: 2px solid #00bfff;
+      border-radius: 20px;
+      padding: 18px;
     }
 
-    .history-panel h2 {
-      margin-top: 0;
-      color: #00c5ff;
-      font-size: 25px;
-    }
-
-    .empty {
-      color: #c5d5df;
-      font-size: 17px;
-    }
-
-    .history-item {
-      margin-bottom: 12px;
-      padding: 14px;
-      border-radius: 10px;
-      background: #061b2b;
-      border-left: 4px solid #00c5ff;
-    }
-
-    .history-item strong {
-      color: #00d084;
-    }
-
-    .history-item small {
-      display: block;
-      margin-top: 5px;
-      color: #b5cbd6;
-    }
-
-    .footer {
+    .scanner-box h2 {
       text-align: center;
-      padding: 20px;
-      color: #8295a1;
-      font-size: 13px;
+      color: #00d9ff;
+      margin-top: 0;
+    }
+
+    #video {
+      display: block;
+      width: 100%;
+      max-height: 60vh;
+      object-fit: cover;
+      background: black;
+      border-radius: 14px;
+      border: 2px solid #00bfff;
+    }
+
+    .scan-guide {
+      text-align: center;
+      color: #d8efff;
+      margin: 12px 0;
+      font-size: 15px;
+    }
+
+    .manual-area {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #27718d;
+    }
+
+    .manual-area input {
+      height: 48px;
+      font-size: 16px;
+    }
+
+    .manual-area button {
+      min-height: 48px;
+      font-size: 16px;
+      margin-top: 10px;
     }
 
     @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
       .header h1 {
-        font-size: 32px;
+        font-size: 36px;
       }
 
       .header p {
-        font-size: 18px;
+        font-size: 17px;
       }
 
       .panel {
@@ -214,7 +236,7 @@
       }
 
       label {
-        font-size: 19px;
+        font-size: 18px;
       }
     }
   </style>
@@ -222,144 +244,167 @@
 
 <body>
 
-  <header class="header">
-    <h1>ERP KPP</h1>
-    <p>SCANNER WAREHOUSE BARU</p>
-  </header>
+  <div class="container">
 
-  <main class="container">
+    <div class="header">
+      <h1>ERP KPP</h1>
+      <p>SCANNER WAREHOUSE BARU</p>
+    </div>
 
-    <section class="panel">
+    <div class="panel">
 
-      <div class="form-group">
-        <label for="kategori">Kategori Barang</label>
+      <label for="kategori">Kategori Barang</label>
+      <select id="kategori">
+        <option value="MATERIAL">MATERIAL</option>
+        <option value="ALAT">ALAT</option>
+        <option value="FILM">FILM</option>
+      </select>
 
-        <select id="kategori">
-          <option value="MATERIAL">MATERIAL</option>
-          <option value="ALAT">ALAT</option>
-          <option value="FILM">FILM</option>
-        </select>
-      </div>
+      <label for="admin">Nama Admin</label>
+      <input
+        type="text"
+        id="admin"
+        placeholder="Masukkan nama admin"
+        autocomplete="off"
+      >
 
-      <div class="form-group">
-        <label for="admin">Nama Admin</label>
+      <label for="jumlah">Jumlah</label>
+      <input
+        type="number"
+        id="jumlah"
+        value="1"
+        min="1"
+        inputmode="numeric"
+      >
 
-        <input
-          type="text"
-          id="admin"
-          placeholder="Masukkan nama admin"
-          autocomplete="off"
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="jumlah">Jumlah</label>
-
-        <input
-          type="number"
-          id="jumlah"
-          value="1"
-          min="1"
-          step="1"
-        >
-      </div>
+      <label for="hasilBarcode">Hasil Barcode</label>
+      <input
+        type="text"
+        id="hasilBarcode"
+        placeholder="Belum ada barcode"
+        readonly
+      >
 
       <button
         type="button"
-        class="button button-scan"
-        id="scanButton"
+        class="btn-scan"
+        id="btnScan"
       >
         SCAN BARCODE
       </button>
 
       <button
         type="button"
-        class="button button-focus"
-        id="focusButton"
+        class="btn-focus"
+        id="btnFocus"
       >
         FOKUS SCANNER
       </button>
 
-      <div id="cameraBox">
+      <div id="message" class="message"></div>
 
-        <div id="reader"></div>
+    </div>
+
+    <div class="history">
+      <h2>RIWAYAT SCAN SEMENTARA</h2>
+      <div id="historyList">
+        Belum ada scan.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL KAMERA -->
+  <div class="scanner-modal" id="scannerModal">
+
+    <div class="scanner-box">
+
+      <h2>SCAN BARCODE</h2>
+
+      <video
+        id="video"
+        autoplay
+        muted
+        playsinline
+      ></video>
+
+      <div class="scan-guide">
+        Arahkan kamera ke barcode sampai terbaca.
+      </div>
+
+      <button
+        type="button"
+        class="btn-close"
+        id="btnCloseCamera"
+      >
+        TUTUP KAMERA
+      </button>
+
+      <div class="manual-area">
+        <input
+          type="text"
+          id="manualBarcode"
+          placeholder="Ketik barcode jika kamera gagal"
+        >
 
         <button
           type="button"
-          class="button button-stop"
-          id="stopCamera"
+          class="btn-send"
+          id="btnManualSend"
         >
-          TUTUP KAMERA
+          KIRIM BARCODE MANUAL
         </button>
-
       </div>
 
-      <div id="statusBox" class="status"></div>
+    </div>
 
-    </section>
-
-    <section class="panel history-panel">
-
-      <h2>RIWAYAT SCAN SEMENTARA</h2>
-
-      <div id="historyList">
-        <div class="empty">Belum ada scan.</div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <footer class="footer">
-    ERP KPP Warehouse System
-  </footer>
+  </div>
 
   <script>
     /*
-      GANTI URL INI DENGAN URL WEB APP APPS SCRIPT WAREHOUSE BARU
+      GANTI URL INI DENGAN URL WEB APP APPS SCRIPT WAREHOUSE ANDA
     */
-    const WEB_APP_URL =
-  "https://script.google.com/macros/s/AKfycby0-lDl1Hf8qBPXvFf0AOVOQkMYsLCNDy_PTn9kpriQPc6oDhBBfc4uj2WyGAdDWI3Y/exec";
+    const URL_WEB_APP =
+      "https://script.google.com/macros/s/AKfycbw71VQ3s7kZKbPrSrYHLUvyalQCZU_QRx7RaCcd3JGgPml1hao55aILXeq-lFuCk06L/exec";
 
-    let scannerWarehouse = null;
-    let scannerAktif = false;
-    let riwayatScan = [];
+    let stream = null;
+    let scanTimer = null;
+    let sedangScan = false;
 
-    const kategoriInput = document.getElementById("kategori");
-    const adminInput = document.getElementById("admin");
-    const jumlahInput = document.getElementById("jumlah");
+    const video = document.getElementById("video");
+    const scannerModal = document.getElementById("scannerModal");
+    const btnScan = document.getElementById("btnScan");
+    const btnFocus = document.getElementById("btnFocus");
+    const btnCloseCamera = document.getElementById("btnCloseCamera");
+    const btnManualSend = document.getElementById("btnManualSend");
 
-    const scanButton = document.getElementById("scanButton");
-    const focusButton = document.getElementById("focusButton");
-    const stopCameraButton = document.getElementById("stopCamera");
-
-    const cameraBox = document.getElementById("cameraBox");
-    const statusBox = document.getElementById("statusBox");
+    const kategori = document.getElementById("kategori");
+    const admin = document.getElementById("admin");
+    const jumlah = document.getElementById("jumlah");
+    const hasilBarcode = document.getElementById("hasilBarcode");
+    const manualBarcode = document.getElementById("manualBarcode");
+    const message = document.getElementById("message");
     const historyList = document.getElementById("historyList");
 
-    function tampilStatus(pesan, tipe) {
-      statusBox.textContent = pesan;
-      statusBox.className = "status " + tipe;
+    let riwayat = [];
+
+    function tampilPesan(teks, tipe) {
+      message.textContent = teks;
+      message.className = "message " + tipe;
     }
 
-    function validasiForm() {
-      const admin = adminInput.value.trim();
-      const jumlah = Number(jumlahInput.value);
+    function hapusPesan() {
+      message.textContent = "";
+      message.className = "message";
+    }
 
-      if (admin === "") {
-        tampilStatus("Nama admin wajib diisi.", "error");
-        adminInput.focus();
-        return false;
-      }
-
-      if (!jumlah || jumlah < 1) {
-        tampilStatus("Jumlah harus lebih dari 0.", "error");
-        jumlahInput.focus();
-        return false;
-      }
-
-      if (!API_URL || API_URL.includes("ISI_URL")) {
-        tampilStatus(
+    function cekURLWebApp() {
+      if (
+        !URL_WEB_APP ||
+        URL_WEB_APP.includes("TEMPELKAN_URL") ||
+        !URL_WEB_APP.startsWith("https://script.google.com/macros/s/")
+      ) {
+        tampilPesan(
           "URL Web App Apps Script belum dimasukkan pada kode index.html.",
           "error"
         );
@@ -369,194 +414,248 @@
       return true;
     }
 
-    async function mulaiKamera() {
-      if (!validasiForm()) {
+    async function bukaKamera() {
+      hapusPesan();
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        tampilPesan(
+          "Kamera tidak didukung browser ini. Gunakan Google Chrome melalui HTTPS.",
+          "error"
+        );
         return;
       }
-
-      if (scannerAktif) {
-        return;
-      }
-
-      cameraBox.style.display = "block";
-
-      tampilStatus("Meminta izin kamera...", "info");
-
-      scannerWarehouse = new Html5Qrcode("reader");
 
       try {
-        await scannerWarehouse.start(
-          {
+        scannerModal.style.display = "block";
+
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
             facingMode: {
-              exact: "environment"
+              ideal: "environment"
+            },
+            width: {
+              ideal: 1280
+            },
+            height: {
+              ideal: 720
             }
           },
-          {
-            fps: 10,
-            qrbox: {
-              width: 260,
-              height: 160
-            },
-            aspectRatio: 1.5
-          },
-          function(decodedText) {
-            prosesBarcode(decodedText);
-          },
-          function(errorMessage) {
-            // Error scan tidak ditampilkan agar tidak mengganggu layar.
-          }
-        );
+          audio: false
+        });
 
-        scannerAktif = true;
+        video.srcObject = stream;
+        sedangScan = true;
 
-        tampilStatus(
-          "Kamera aktif. Arahkan kamera ke barcode barang.",
-          "info"
-        );
+        mulaiDeteksiBarcode();
 
       } catch (error) {
-        console.error(error);
+        scannerModal.style.display = "none";
 
-        cameraBox.style.display = "none";
-
-        tampilStatus(
-          "Kamera tidak bisa dibuka. Pastikan izin kamera sudah diizinkan pada browser.",
+        tampilPesan(
+          "Kamera tidak bisa dibuka.\n\n" +
+          "Pastikan izin kamera diberikan kepada Chrome.\n" +
+          "Detail: " + error.message,
           "error"
         );
       }
     }
 
-    async function hentikanKamera() {
-      if (scannerWarehouse && scannerAktif) {
-        try {
-          await scannerWarehouse.stop();
-          scannerWarehouse.clear();
-        } catch (error) {
-          console.error("Gagal menghentikan kamera:", error);
-        }
+    function tutupKamera() {
+      sedangScan = false;
+
+      if (scanTimer) {
+        clearTimeout(scanTimer);
+        scanTimer = null;
       }
 
-      scannerWarehouse = null;
-      scannerAktif = false;
-      cameraBox.style.display = "none";
+      if (stream) {
+        stream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+
+        stream = null;
+      }
+
+      video.srcObject = null;
+      scannerModal.style.display = "none";
     }
 
-    async function prosesBarcode(kodeBarcode) {
-      if (!kodeBarcode) {
+    function mulaiDeteksiBarcode() {
+      if (!sedangScan) {
         return;
       }
 
-      await hentikanKamera();
+      if (!("BarcodeDetector" in window)) {
+        tampilPesan(
+          "Browser belum mendukung pembacaan barcode otomatis.\n" +
+          "Silakan ketik barcode pada kolom manual di jendela kamera.",
+          "error"
+        );
+        return;
+      }
 
-      const kategori = kategoriInput.value;
-      const admin = adminInput.value.trim();
-      const jumlah = Number(jumlahInput.value);
+      const detector = new BarcodeDetector({
+        formats: [
+          "code_128",
+          "code_39",
+          "ean_13",
+          "ean_8",
+          "upc_a",
+          "upc_e",
+          "qr_code"
+        ]
+      });
 
-      tampilStatus(
-        "Barcode terbaca: " + kodeBarcode + ". Sedang menyimpan...",
-        "info"
-      );
+      deteksiDenganKamera(detector);
+    }
 
-      const data = {
-        barcode: kodeBarcode,
-        jenis: kategori,
-        kategori: kategori,
-        admin: admin,
-        jumlah: jumlah
-      };
+    async function deteksiDenganKamera(detector) {
+      if (!sedangScan) {
+        return;
+      }
 
       try {
-        const parameter = new URLSearchParams(data);
+        if (video.readyState >= 2) {
+          const hasil = await detector.detect(video);
 
-        const response = await fetch(API_URL + "?" + parameter.toString(), {
+          if (hasil && hasil.length > 0) {
+            const nilaiBarcode = hasil[0].rawValue;
+
+            if (nilaiBarcode) {
+              sedangScan = false;
+              tutupKamera();
+              prosesBarcode(nilaiBarcode);
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        console.log("Deteksi barcode:", error);
+      }
+
+      scanTimer = setTimeout(function() {
+        deteksiDenganKamera(detector);
+      }, 250);
+    }
+
+    function prosesBarcode(nilaiBarcode) {
+      const kode = String(nilaiBarcode || "").trim();
+
+      if (!kode) {
+        tampilPesan("Barcode kosong.", "error");
+        return;
+      }
+
+      hasilBarcode.value = kode;
+      manualBarcode.value = kode;
+
+      kirimKeWebApp(kode);
+    }
+
+    async function kirimKeWebApp(kodeBarcode) {
+      if (!cekURLWebApp()) {
+        return;
+      }
+
+      const namaAdmin = admin.value.trim();
+      const jenis = kategori.value;
+      const qty = jumlah.value;
+
+      if (!namaAdmin) {
+        tampilPesan("Nama admin wajib diisi.", "error");
+        admin.focus();
+        return;
+      }
+
+      if (!qty || Number(qty) < 1) {
+        tampilPesan("Jumlah harus lebih besar dari 0.", "error");
+        jumlah.focus();
+        return;
+      }
+
+      tampilPesan("Mengirim data scan ke Google Sheets...", "success");
+
+      const url =
+        URL_WEB_APP +
+        "?barcode=" + encodeURIComponent(kodeBarcode) +
+        "&jenis=" + encodeURIComponent(jenis) +
+        "&admin=" + encodeURIComponent(namaAdmin) +
+        "&jumlah=" + encodeURIComponent(qty);
+
+      try {
+        const response = await fetch(url, {
           method: "GET",
-          mode: "cors"
+          cache: "no-store"
         });
 
         const hasil = await response.text();
 
         if (
-          hasil.toUpperCase().includes("OK") ||
-          hasil.toUpperCase().includes("BERHASIL") ||
-          hasil.toUpperCase().includes("SUKSES")
+          hasil.startsWith("OK") ||
+          hasil.startsWith("SUKSES") ||
+          hasil.startsWith("BERHASIL")
         ) {
-          tampilStatus(
-            "Berhasil disimpan.\nBarcode: " +
-            kodeBarcode +
-            "\nKategori: " +
-            kategori +
-            "\nJumlah: " +
-            jumlah,
-            "success"
-          );
-
-          tambahRiwayat({
-            barcode: kodeBarcode,
-            kategori: kategori,
-            jumlah: jumlah,
-            admin: admin,
-            waktu: new Date().toLocaleString("id-ID")
-          });
-
-        } else if (hasil.toUpperCase().includes("DUPLIKAT")) {
-          tampilStatus(
-            "Barcode sudah pernah discan:\n" + kodeBarcode,
-            "error"
-          );
-
+          tampilPesan(hasil, "success");
+          tambahRiwayat(kodeBarcode, jenis, namaAdmin, qty, hasil);
+        } else if (hasil.startsWith("DUPLIKAT")) {
+          tampilPesan(hasil, "error");
+          tambahRiwayat(kodeBarcode, jenis, namaAdmin, qty, hasil);
         } else {
-          tampilStatus(
-            "Jawaban dari server:\n" + hasil,
-            "error"
-          );
+          tampilPesan(hasil, "error");
         }
 
       } catch (error) {
-        console.error(error);
-
-        tampilStatus(
-          "Gagal terhubung ke Google Apps Script. Periksa URL Web App dan aksesnya.",
+        tampilPesan(
+          "Gagal menghubungi Web App Apps Script.\n\n" +
+          "Periksa URL Web App dan akses deployment.\n\n" +
+          error.message,
           "error"
         );
       }
     }
 
-    function tambahRiwayat(data) {
-      riwayatScan.unshift(data);
+    function tambahRiwayat(kode, jenis, namaAdmin, qty, hasil) {
+      riwayat.unshift({
+        waktu: new Date().toLocaleString("id-ID"),
+        barcode: kode,
+        jenis: jenis,
+        admin: namaAdmin,
+        jumlah: qty,
+        hasil: hasil
+      });
 
-      if (riwayatScan.length > 20) {
-        riwayatScan.pop();
+      if (riwayat.length > 20) {
+        riwayat = riwayat.slice(0, 20);
       }
 
       tampilkanRiwayat();
     }
 
     function tampilkanRiwayat() {
-      historyList.innerHTML = "";
-
-      if (riwayatScan.length === 0) {
-        historyList.innerHTML =
-          '<div class="empty">Belum ada scan.</div>';
+      if (riwayat.length === 0) {
+        historyList.textContent = "Belum ada scan.";
         return;
       }
 
-      riwayatScan.forEach(function(item) {
+      historyList.innerHTML = "";
+
+      riwayat.forEach(function(item) {
         const div = document.createElement("div");
         div.className = "history-item";
 
-        div.innerHTML = `
-          <strong>${escapeHtml(item.barcode)}</strong>
-          <div>Kategori: ${escapeHtml(item.kategori)}</div>
-          <div>Jumlah: ${escapeHtml(String(item.jumlah))}</div>
-          <small>Admin: ${escapeHtml(item.admin)}</small>
-          <small>${escapeHtml(item.waktu)}</small>
-        `;
+        div.innerHTML =
+          "<b>Barcode:</b> " + aman(item.barcode) + "<br>" +
+          "<b>Kategori:</b> " + aman(item.jenis) + "<br>" +
+          "<b>Admin:</b> " + aman(item.admin) + "<br>" +
+          "<b>Jumlah:</b> " + aman(item.jumlah) + "<br>" +
+          "<b>Waktu:</b> " + aman(item.waktu) + "<br>" +
+          "<b>Hasil:</b> " + aman(item.hasil);
 
         historyList.appendChild(div);
       });
     }
 
-    function escapeHtml(teks) {
+    function aman(teks) {
       return String(teks)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -565,33 +664,44 @@
         .replaceAll("'", "&#039;");
     }
 
-    scanButton.addEventListener("click", function() {
-      mulaiKamera();
+    btnScan.addEventListener("click", function() {
+      bukaKamera();
     });
 
-    focusButton.addEventListener("click", function() {
-      if (!scannerAktif) {
-        mulaiKamera();
+    btnFocus.addEventListener("click", function() {
+      if (scannerModal.style.display === "block") {
+        video.focus();
+      } else {
+        bukaKamera();
+      }
+    });
+
+    btnCloseCamera.addEventListener("click", function() {
+      tutupKamera();
+    });
+
+    btnManualSend.addEventListener("click", function() {
+      const kode = manualBarcode.value.trim();
+
+      if (!kode) {
+        alert("Masukkan barcode terlebih dahulu.");
+        manualBarcode.focus();
         return;
       }
 
-      const reader = document.getElementById("reader");
+      tutupKamera();
+      prosesBarcode(kode);
+    });
 
-      if (reader) {
-        reader.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
+    manualBarcode.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        btnManualSend.click();
       }
     });
 
-    stopCameraButton.addEventListener("click", function() {
-      hentikanKamera();
-
-      tampilStatus(
-        "Kamera ditutup.",
-        "info"
-      );
+    window.addEventListener("beforeunload", function() {
+      tutupKamera();
     });
   </script>
 
