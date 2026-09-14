@@ -274,8 +274,8 @@
   </div>
 
   <script>
-    const URL_WEB_APP =
-      "https://script.google.com/macros/s/AKfycbwzw7fVsmLbAyH_TmG9ToBGmdV4ruiDOsFSMOJzDdBYL4oDarfqxWevR11WnS-G6GeD/exec";
+const URL_WEB_APP =
+  "https://script.google.com/macros/s/AKfycbzmwz3pb7EaqlM4ZJQscDYHJLd0f6PDlJ6vNrPKBYl_bfWSO6WqAFDFQeMHJJnQGYd6/exec";
 
     let scanner = null;
     let sedangScan = false;
@@ -328,13 +328,13 @@
 
       document.getElementById("btnKirim").disabled = true;
 
-      const url =
-        URL_WEB_APP +
-        "?barcode=" + encodeURIComponent(barcode) +
-        "&admin=" + encodeURIComponent(admin) +
-        "&jenis=" + encodeURIComponent(jenis) +
-        "&jumlah=" + encodeURIComponent(jumlah) +
-        "&callback=hasilScanGoogle";
+const url =
+  URL_WEB_APP +
+  "?barcode=" + encodeURIComponent(barcode) +
+  "&admin=" + encodeURIComponent(admin) +
+  "&jenis=" + encodeURIComponent(jenis) +
+  "&jumlah=" + encodeURIComponent(jumlah) +
+  "&callback=hasilScanGoogle";
 
       const scriptLama =
         document.getElementById("jsonpScan");
