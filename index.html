@@ -364,8 +364,8 @@
     /*
       GANTI URL INI DENGAN URL WEB APP APPS SCRIPT WAREHOUSE ANDA
     */
-    const URL_WEB_APP =
-      "https://script.google.com/macros/s/AKfycbwb6zQsmyJVb4w8UdZyw4Pe8_ZPGUtHoZc-X-Ijxh19etIb01kiqQlBSEFUFfXFFuba/execc";
+const URL_WEB_APP =
+  "https://script.google.com/macros/s/AKfycbwb6zQsmyJVb4w8UdZyw4Pe8_ZPGUtHoZc-X-Ijxh19etIb01kiqQlBSEFUFfXFFuba/exec";
 
     let stream = null;
     let scanTimer = null;
@@ -552,68 +552,81 @@
       kirimKeWebApp(kode);
     }
 
-    async function kirimKeWebApp(kodeBarcode) {
-      if (!cekURLWebApp()) {
-        return;
-      }
+async function kirimKeWebApp(kodeBarcode) {
+  if (!cekURLWebApp()) {
+    return;
+  }
 
-      const namaAdmin = admin.value.trim();
-      const jenis = kategori.value;
-      const qty = jumlah.value;
+  const namaAdmin = admin.value.trim();
+  const jenis = kategori.value;
+  const qty = jumlah.value;
 
-      if (!namaAdmin) {
-        tampilPesan("Nama admin wajib diisi.", "error");
-        admin.focus();
-        return;
-      }
+  if (!namaAdmin) {
+    tampilPesan("Nama admin wajib diisi.", "error");
+    admin.focus();
+    return;
+  }
 
-      if (!qty || Number(qty) < 1) {
-        tampilPesan("Jumlah harus lebih besar dari 0.", "error");
-        jumlah.focus();
-        return;
-      }
+  if (!qty || Number(qty) < 1) {
+    tampilPesan("Jumlah harus lebih besar dari 0.", "error");
+    jumlah.focus();
+    return;
+  }
 
-      tampilPesan("Mengirim data scan ke Google Sheets...", "success");
+  tampilPesan("Mengirim data scan ke Google Sheets...", "success");
 
-      const url =
-        URL_WEB_APP +
-        "?barcode=" + encodeURIComponent(kodeBarcode) +
-        "&jenis=" + encodeURIComponent(jenis) +
-        "&admin=" + encodeURIComponent(namaAdmin) +
-        "&jumlah=" + encodeURIComponent(qty);
+  const url =
+    URL_WEB_APP +
+    "?barcode=" + encodeURIComponent(kodeBarcode) +
+    "&admin=" + encodeURIComponent(namaAdmin);
 
-      try {
-        const response = await fetch(url, {
-          method: "GET",
-          cache: "no-store"
-        });
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      cache: "no-store"
+    });
 
-        const hasil = await response.text();
-
-        if (
-          hasil.startsWith("OK") ||
-          hasil.startsWith("SUKSES") ||
-          hasil.startsWith("BERHASIL")
-        ) {
-          tampilPesan(hasil, "success");
-          tambahRiwayat(kodeBarcode, jenis, namaAdmin, qty, hasil);
-        } else if (hasil.startsWith("DUPLIKAT")) {
-          tampilPesan(hasil, "error");
-          tambahRiwayat(kodeBarcode, jenis, namaAdmin, qty, hasil);
-        } else {
-          tampilPesan(hasil, "error");
-        }
-
-      } catch (error) {
-        tampilPesan(
-          "Gagal menghubungi Web App Apps Script.\n\n" +
-          "Periksa URL Web App dan akses deployment.\n\n" +
-          error.message,
-          "error"
-        );
-      }
+    if (!response.ok) {
+      throw new Error("HTTP Error: " + response.status);
     }
 
+    const hasil = await response.json();
+
+    if (hasil.status === "OK") {
+      tampilPesan(
+        "BERHASIL\n" +
+        "Barang: " + hasil.namaBarang + "\n" +
+        "Kategori: " + hasil.kategori + "\n" +
+        "Stok: " + hasil.stokSebelum +
+        " menjadi " + hasil.stokSesudah,
+        "success"
+      );
+
+      tambahRiwayat(
+        kodeBarcode,
+        jenis,
+        namaAdmin,
+        qty,
+        hasil.message
+      );
+    } else {
+      tampilPesan(
+        hasil.message || "Scan gagal.",
+        "error"
+      );
+    }
+
+  } catch (error) {
+    tampilPesan(
+      "Gagal menghubungi Google Sheets.\n\n" +
+      error.message,
+      "error"
+    );
+
+    console.error(error);
+  }
+}
     function tambahRiwayat(kode, jenis, namaAdmin, qty, hasil) {
       riwayat.unshift({
         waktu: new Date().toLocaleString("id-ID"),
