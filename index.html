@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>ERP KPP - Scanner Warehouse</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #061b2b;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+      color: #00c8ff;
+      font-size: 30px;
+    }
+
+    .header p {
+      color: #b8d9e8;
+      margin-top: 8px;
+    }
+
+    .card {
+      background: #09283c;
+      border: 1px solid #087da8;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 15px rgba(0, 180, 255, 0.12);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #b9eaff;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      min-height: 45px;
+      border-radius: 8px;
+      border: 1px solid #168ab5;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    input,
+    select {
+      background: #031522;
+      color: white;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background: #00a9e8;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    button:hover {
+      background: #0089bd;
+    }
+
+    .scan-button {
+      background: #00b86b;
+    }
+
+    .scan-button:hover {
+      background: #008c52;
+    }
+
+    .result {
+      display: none;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      line-height: 1.7;
+    }
+
+    .success {
+      display: block;
+      background: #064d35;
+      border: 1px solid #00d982;
+    }
+
+    .failed {
+      display: block;
+      background: #5b211e;
+      border: 1px solid #ff665c;
+    }
+
+    .history-title {
+      margin-top: 0;
+      color: #00c8ff;
+    }
+
+    .history {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      border-bottom: 1px solid #16475c;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+
+    .small {
+      color: #9bc5d8;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="header">
+      <h1>ERP KPP</h1>
+      <p>SCANNER WAREHOUSE BARU</p>
+    </div>
+
+    <div class="card">
+
+      <label for="kategori">Kategori Barang</label>
+
+      <select id="kategori">
+        <option value="MATERIAL">MATERIAL</option>
+        <option value="ALAT">ALAT</option>
+        <option value="FILM">FILM</option>
+      </select>
+
+      <label for="admin">Nama Admin</label>
+
+      <input
+        type="text"
+        id="admin"
+        placeholder="Masukkan nama admin"
+      >
+
+      <label for="qty">Jumlah</label>
+
+      <input
+        type="number"
+        id="qty"
+        value="1"
+        min="1"
+      >
+
+      <label for="barcode">Scan Barcode</label>
+
+      <input
+        type="text"
+        id="barcode"
+        placeholder="Arahkan scanner ke sini"
+        autocomplete="off"
+      >
+
+      <button class="scan-button" onclick="prosesScan()">
+        SCAN BARCODE
+      </button>
+
+      <button onclick="fokusBarcode()">
+        FOKUS SCANNER
+      </button>
+
+      <div id="result" class="result"></div>
+
+    </div>
+
+    <div class="card">
+
+      <h3 class="history-title">RIWAYAT SCAN SEMENTARA</h3>
+
+      <div id="history" class="history">
+        Belum ada scan.
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const barcodeInput = document.getElementById("barcode");
+    const resultBox = document.getElementById("result");
+    const historyBox = document.getElementById("history");
+
+    let historyData = [];
+
+    window.onload = function() {
+      fokusBarcode();
+    };
+
+    barcodeInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        prosesScan();
+      }
+    });
+
+    function fokusBarcode() {
+      barcodeInput.focus();
+      barcodeInput.select();
+    }
+
+    function prosesScan() {
+      const barcode = barcodeInput.value.trim();
+      const kategori = document.getElementById("kategori").value;
+      const qty = Number(document.getElementById("qty").value || 1);
+      const admin = document.getElementById("admin").value.trim();
+
+      if (!barcode) {
+        tampilkanHasil(false, "Barcode belum diisi.");
+        fokusBarcode();
+        return;
+      }
+
+      tampilkanHasil(null, "Sedang memproses scan...");
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          if (data.sukses) {
+            tampilkanHasil(
+              true,
+              "<b>SCAN BERHASIL</b><br>" +
+              "Barcode: " + aman(data.barcode) + "<br>" +
+              "Kategori: " + aman(data.kategori) + "<br>" +
+              "Nama Barang: " + aman(data.nama) + "<br>" +
+              "Jumlah: " + aman(data.qty) + "<br>" +
+              "Waktu: " + aman(data.waktu)
+            );
+
+            tambahRiwayat(data);
+          } else {
+            tampilkanHasil(
+              false,
+              "<b>BARANG TIDAK DITEMUKAN</b><br>" +
+              "Barcode: " + aman(data.barcode) + "<br>" +
+              "Kategori: " + aman(data.kategori)
+            );
+
+            tambahRiwayat(data);
+          }
+
+          barcodeInput.value = "";
+          fokusBarcode();
+        })
+        .withFailureHandler(function(error) {
+          tampilkanHasil(
+            false,
+            "ERROR: " + aman(error.message)
+          );
+
+          fokusBarcode();
+        })
+        .scanBarcode(barcode, kategori, qty, admin);
+    }
+
+    function tampilkanHasil(sukses, pesan) {
+      resultBox.style.display = "block";
+      resultBox.className = "result";
+
+      if (sukses === true) {
+        resultBox.classList.add("success");
+      }
+
+      if (sukses === false) {
+        resultBox.classList.add("failed");
+      }
+
+      resultBox.innerHTML = pesan;
+    }
+
+    function tambahRiwayat(data) {
+      historyData.unshift(data);
+
+      if (historyData.length > 20) {
+        historyData.pop();
+      }
+
+      historyBox.innerHTML = historyData.map(function(item) {
+        return `
+          <div class="history-item">
+            <b>${aman(item.nama)}</b><br>
+            ${aman(item.kategori)} |
+            Qty: ${aman(item.qty)}<br>
+            <span class="small">
+              ${aman(item.barcode)} - ${aman(item.waktu)}
+            </span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function aman(text) {
+      return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+
+</body>
+</html>
