@@ -552,7 +552,7 @@ const URL_WEB_APP =
       kirimKeWebApp(kode);
     }
 
-async function kirimKeWebApp(kodeBarcode) {
+function kirimKeWebApp(kodeBarcode) {
   if (!cekURLWebApp()) {
     return;
   }
@@ -575,24 +575,18 @@ async function kirimKeWebApp(kodeBarcode) {
 
   tampilPesan("Mengirim data scan ke Google Sheets...", "success");
 
+  const namaCallback =
+    "hasilScan_" + Date.now();
+
+  const script = document.createElement("script");
+
   const url =
     URL_WEB_APP +
     "?barcode=" + encodeURIComponent(kodeBarcode) +
-    "&admin=" + encodeURIComponent(namaAdmin);
+    "&admin=" + encodeURIComponent(namaAdmin) +
+    "&callback=" + encodeURIComponent(namaCallback);
 
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      redirect: "follow",
-      cache: "no-store"
-    });
-
-    if (!response.ok) {
-      throw new Error("HTTP Error: " + response.status);
-    }
-
-    const hasil = await response.json();
-
+  window[namaCallback] = function(hasil) {
     if (hasil.status === "OK") {
       tampilPesan(
         "BERHASIL\n" +
@@ -617,16 +611,30 @@ async function kirimKeWebApp(kodeBarcode) {
       );
     }
 
-  } catch (error) {
+    delete window[namaCallback];
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+  };
+
+  script.onerror = function() {
     tampilPesan(
-      "Gagal menghubungi Google Sheets.\n\n" +
-      error.message,
+      "Gagal menghubungi Google Apps Script. Periksa URL Web App dan izin akses.",
       "error"
     );
 
-    console.error(error);
-  }
+    delete window[namaCallback];
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+  };
+
+  script.src = url;
+  document.body.appendChild(script);
 }
+    
     function tambahRiwayat(kode, jenis, namaAdmin, qty, hasil) {
       riwayat.unshift({
         waktu: new Date().toLocaleString("id-ID"),
