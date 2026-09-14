@@ -294,8 +294,7 @@ const URL_WEB_APP =
 
     function kirimScan() {
   const barcode = document.getElementById("barcode").value.trim();
-  const admin =
-    document.getElementById("admin").value.trim() || "ADMIN";
+  const admin = document.getElementById("admin").value.trim() || "ADMIN";
   const jenis = document.getElementById("jenis").value;
   const jumlah = Math.max(
     1,
@@ -304,23 +303,23 @@ const URL_WEB_APP =
 
   if (!barcode) {
     tampilkanStatus("Barcode belum diisi.", "warning");
-    document.getElementById("barcode").focus();
     return;
   }
 
-  const btn = document.getElementById("btnKirim");
-  btn.disabled = true;
+  const tombol = document.getElementById("btnKirim");
+  tombol.disabled = true;
+  tampilkanStatus("Mengirim data scan...");
 
-  const namaCallback = "callbackScan_" + Date.now();
+  const callbackName = "hasilScan_" + Date.now();
 
-  window[namaCallback] = function(data) {
-    delete window[namaCallback];
+  window[callbackName] = function(data) {
+    delete window[callbackName];
 
     if (script) {
       script.remove();
     }
 
-    btn.disabled = false;
+    tombol.disabled = false;
     hasilScanGoogle(data);
   };
 
@@ -330,26 +329,25 @@ const URL_WEB_APP =
     "&admin=" + encodeURIComponent(admin) +
     "&jenis=" + encodeURIComponent(jenis) +
     "&jumlah=" + encodeURIComponent(jumlah) +
-    "&callback=" + encodeURIComponent(namaCallback) +
+    "&callback=" + encodeURIComponent(callbackName) +
     "&t=" + Date.now();
-
-  tampilkanStatus("Mengirim data scan...");
 
   const script = document.createElement("script");
   script.id = "jsonpScan";
   script.src = url;
 
   script.onerror = function() {
-    delete window[namaCallback];
+    delete window[callbackName];
     script.remove();
-    btn.disabled = false;
+    tombol.disabled = false;
 
     tampilkanStatus(
-      "Respons API gagal dimuat.\n\nURL yang dipanggil:\n" + url,
+      "API tidak mengembalikan respons.\n\n" +
+      "URL:\n" + url,
       "error"
     );
 
-    console.error("Gagal memuat URL Apps Script:", url);
+    console.error("URL API:", url);
   };
 
   document.body.appendChild(script);
