@@ -274,267 +274,181 @@
   </div>
 
   <script>
-const URL_WEB_APP =
-  "https://script.google.com/macros/s/AKfycbyM5g2gyjrG-DPWaFvYOYladPbA_7K9wvxED-ECZjtN21j9eABysY1_R-vZBFE8JyNT/exec";
+  const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbyM5g2gyjrG-DPWaFvYOYladPbA_7K9wvxED-ECZjtN21j9eABysY1_R-vZBFE8JyNT/exec";
 
-async function tesKoneksiAppsScript() {
-  try {
-    const response = await fetch(API_URL + '?action=tes', {
-      method: 'GET',
-      redirect: 'follow'
-    });
+  let scanner = null;
+  let sedangScan = false;
+  let riwayat = [];
 
-    const teks = await response.text();
-
-    console.log('Status:', response.status);
-    console.log('Respons Apps Script:', teks);
-
-    alert('Respons Apps Script:\n' + teks);
-
-  } catch (error) {
-    console.error('Error koneksi:', error);
-    alert('Gagal koneksi: ' + error.message);
+  function tampilkanStatus(pesan, tipe = "") {
+    const status = document.getElementById("status");
+    status.textContent = pesan;
+    status.className = "status";
+    if (tipe) status.classList.add(tipe);
   }
-}
-    
-    let scanner = null;
-    let sedangScan = false;
-    let riwayat = [];
 
-    function tampilkanStatus(pesan, tipe = "") {
-      const status = document.getElementById("status");
+  function kirimScan() {
+    const barcode = document.getElementById("barcode").value.trim();
+    const admin = document.getElementById("admin").value.trim() || "ADMIN";
+    const jenis = document.getElementById("jenis").value;
+    const jumlah = Number(document.getElementById("jumlah").value || 1);
 
-      status.textContent = pesan;
-      status.className = "status";
-
-      if (tipe) {
-        status.classList.add(tipe);
-      }
+    if (!barcode) {
+      tampilkanStatus("Barcode belum diisi.", "warning");
+      return;
     }
 
-    function kirimScan() {
-  const barcode = document.getElementById("barcode").value.trim();
-  const admin = document.getElementById("admin").value.trim() || "ADMIN";
-  const jenis = document.getElementById("jenis").value;
-  const jumlah = Number(
-    document.getElementById("jumlah").value || 1
-  );
+    const tombol = document.getElementById("btnKirim");
+    if (tombol) tombol.disabled = true;
 
-  if (!barcode) {
-    tampilkanStatus("Barcode belum diisi.", "warning");
-    return;
+    const url = URL_WEB_APP +
+      "?barcode=" + encodeURIComponent(barcode) +
+      "&admin=" + encodeURIComponent(admin) +
+      "&jenis=" + encodeURIComponent(jenis) +
+      "&jumlah=" + encodeURIComponent(jumlah) +
+      "&callback=hasilScanGoogle" +
+      "&t=" + Date.now();
+
+    tampilkanStatus("Mengirim data scan...", "info");
+
+    const scriptLama = document.getElementById("jsonpScan");
+    if (scriptLama) scriptLama.remove();
+
+    const script = document.createElement("script");
+    script.id = "jsonpScan";
+    script.src = url;
+
+    script.onerror = function() {
+      if (tombol) tombol.disabled = false;
+      tampilkanStatus("Gagal memuat respons Apps Script. Pastikan Web App sudah Deploy Ulang sebagai versi BARU.", "error");
+    };
+
+    document.body.appendChild(script);
   }
 
-  const tombol = document.getElementById("btnKirim");
-  if (tombol) tombol.disabled = true;
-
-  const url =
-    URL_WEB_APP +
-    "?barcode=" + encodeURIComponent(barcode) +
-    "&admin=" + encodeURIComponent(admin) +
-    "&jenis=" + encodeURIComponent(jenis) +
-    "&jumlah=" + encodeURIComponent(jumlah) +
-    "&callback=hasilScanGoogle" +
-    "&t=" + Date.now();
-
-  tampilkanStatus("Mengirim data scan...", "info");
-
-  const scriptLama = document.getElementById("jsonpScan");
-  if (scriptLama) scriptLama.remove();
-
-  const script = document.createElement("script");
-  script.id = "jsonpScan";
-  script.src = url;
-
-  script.onerror = function() {
+  // Callback dari Apps Script
+  window.hasilScanGoogle = function (data) {
+    const tombol = document.getElementById("btnKirim");
     if (tombol) tombol.disabled = false;
 
-    tampilkanStatus(
-      "Gagal memuat respons Apps Script. Lihat Console browser untuk detail.",
-      "error"
-    );
+    if (data && data.status === "OK") {
+      tampilkanStatus(
+        "SCAN BERHASIL!\n" +
+        "Barang: " + data.namaBarang + "\n" +
+        "Stok Sisa: " + data.stokSesudah,
+        "success"
+      );
 
-    console.error("URL yang dipanggil:", url);
+      tambahRiwayat({
+        barcode: document.getElementById("barcode").value,
+        namaBarang: data.namaBarang,
+        kategori: document.getElementById("jenis").value,
+        admin: document.getElementById("admin").value || "ADMIN",
+        jumlah: document.getElementById("jumlah").value
+      });
+
+      // Clear input barcode setelah sukses
+      document.getElementById("barcode").value = "";
+    } else {
+      tampilkanStatus(
+        data && data.message ? data.message : "Gagal memproses transaksi.",
+        "error"
+      );
+    }
   };
 
-  document.body.appendChild(script);
-}
+  function tambahRiwayat(data) {
+    riwayat.unshift({
+      waktu: new Date().toLocaleTimeString("id-ID"),
+      barcode: data.barcode || "-",
+      namaBarang: data.namaBarang || "-",
+      kategori: data.kategori || "-",
+      admin: data.admin || "-",
+      jumlah: data.jumlah || 1
+    });
 
-    function tambahRiwayat(data) {
-      riwayat.unshift({
-        waktu: data.waktu || new Date().toLocaleString("id-ID"),
-        barcode: data.barcode || "-",
-        namaBarang: data.namaBarang || "-",
-        kategori: data.kategori || "-",
-        admin: data.admin || "-",
-        jumlah: data.jumlah || 1
-      });
+    if (riwayat.length > 20) riwayat = riwayat.slice(0, 20);
+    tampilkanRiwayat();
+  }
 
-      if (riwayat.length > 20) {
-        riwayat = riwayat.slice(0, 20);
-      }
-
-      tampilkanRiwayat();
+  function tampilkanRiwayat() {
+    const history = document.getElementById("history");
+    if (riwayat.length === 0) {
+      history.innerHTML = '<div class="empty">Belum ada scan.</div>';
+      return;
     }
 
-    function tampilkanRiwayat() {
-      const history = document.getElementById("history");
+    history.innerHTML = riwayat.map(function (item) {
+      return `
+        <div class="history-item">
+          <b>Waktu:</b> ${aman(item.waktu)}<br>
+          <b>Barcode:</b> ${aman(item.barcode)}<br>
+          <b>Barang:</b> ${aman(item.namaBarang)}<br>
+          <b>Admin:</b> ${aman(item.admin)} | <b>Qty:</b> ${aman(item.jumlah)}
+        </div>
+      `;
+    }).join("");
+  }
 
-      if (riwayat.length === 0) {
-        history.innerHTML =
-          '<div class="empty">Belum ada scan.</div>';
-        return;
-      }
+  function aman(nilai) {
+    return String(nilai)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-      history.innerHTML = riwayat.map(function (item) {
-        return `
-          <div class="history-item">
-            <b>Waktu:</b> ${aman(item.waktu)}<br>
-            <b>Barcode:</b> ${aman(item.barcode)}<br>
-            <b>Barang:</b> ${aman(item.namaBarang)}<br>
-            <b>Kategori:</b> ${aman(item.kategori)}<br>
-            <b>Admin:</b> ${aman(item.admin)}<br>
-            <b>Jumlah:</b> ${aman(item.jumlah)}
-          </div>
-        `;
-      }).join("");
-    }
+  function bukaScanner() {
+    const reader = document.getElementById("reader");
+    const btnStop = document.getElementById("btnStop");
 
-    function aman(nilai) {
-      return String(nilai)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+    if (sedangScan) return;
 
-    function bukaScanner() {
-      const reader = document.getElementById("reader");
-      const btnStop = document.getElementById("btnStop");
+    reader.style.display = "block";
+    btnStop.style.display = "block";
 
-      if (sedangScan) {
-        return;
-      }
+    scanner = new Html5Qrcode("reader");
+    sedangScan = true;
 
-      reader.style.display = "block";
-      btnStop.style.display = "block";
-
-      scanner = new Html5Qrcode("reader");
-      sedangScan = true;
-
-      scanner.start(
-        {
-          facingMode: "environment"
-        },
-        {
-          fps: 10,
-          qrbox: {
-            width: 250,
-            height: 150
-          }
-        },
-        function (hasilBarcode) {
-          document.getElementById("barcode").value =
-            hasilBarcode;
-
-          tutupScanner();
-
-          tampilkanStatus(
-            "Barcode terbaca: " + hasilBarcode
-          );
-        },
-        function () {
-          // Error pembacaan sementara diabaikan
-        }
-      ).catch(function (error) {
-        sedangScan = false;
-
-        reader.style.display = "none";
-        btnStop.style.display = "none";
-
-        tampilkanStatus(
-          "Kamera tidak dapat dibuka.\n" + error,
-          "error"
-        );
-      });
-    }
-
-    function tutupScanner() {
-      const reader = document.getElementById("reader");
-      const btnStop = document.getElementById("btnStop");
-
-      if (scanner && sedangScan) {
-        scanner.stop()
-          .then(function () {
-            scanner.clear();
-          })
-          .catch(function () {
-            // Abaikan error penutupan kamera
-          });
-      }
-
-      scanner = null;
+    scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      function (hasilBarcode) {
+        document.getElementById("barcode").value = hasilBarcode;
+        tutupScanner();
+        kirimScan(); // Otomatis kirim saat ter-scan
+      },
+      function () {}
+    ).catch(function (error) {
       sedangScan = false;
-
       reader.style.display = "none";
       btnStop.style.display = "none";
+      tampilkanStatus("Kamera tidak dapat dibuka.\n" + error, "error");
+    });
+  }
+
+  function tutupScanner() {
+    const reader = document.getElementById("reader");
+    const btnStop = document.getElementById("btnStop");
+
+    if (scanner && sedangScan) {
+      scanner.stop().then(() => scanner.clear()).catch(() => {});
     }
 
-    document
-      .getElementById("barcode")
-      .addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          kirimScan();
-        }
-      });
-
-    window.hasilScanGoogle = function(data) {
-  console.log("Respons Apps Script:", data);
-
-  const tombol = document.getElementById("btnKirim");
-  if (tombol) tombol.disabled = false;
-
-  if (data.status === "OK") {
-    tampilkanStatus(
-      "Berhasil! " +
-      data.namaBarang +
-      " | Stok: " +
-      data.stokSesudah,
-      "success"
-    );
-  } else {
-    tampilkanStatus(
-      data.message || "Data tidak berhasil diproses.",
-      "error"
-    );
+    scanner = null;
+    sedangScan = false;
+    reader.style.display = "none";
+    btnStop.style.display = "none";
   }
-};
 
-window.hasilScanGoogle = function (data) {
-  console.log("RESPONS APPS SCRIPT:", data);
-
-  const tombol = document.getElementById("btnKirim");
-  if (tombol) tombol.disabled = false;
-
-  if (data && data.status === "OK") {
-    tampilkanStatus(
-      "SCAN BERHASIL\n" +
-      data.namaBarang +
-      "\nStok sekarang: " +
-      data.stokSesudah,
-      "success"
-    );
-  } else {
-    tampilkanStatus(
-      data && data.message
-        ? data.message
-        : "Respons Apps Script tidak valid.",
-      "error"
-    );
-  }
-};
+  document.getElementById("barcode").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      kirimScan();
+    }
+  });
+</script>
   </script>
 
 </body>
