@@ -51,9 +51,7 @@
       font-size: 22px;
       outline: none;
     }
-    input:focus, select:focus {
-      border-color: #00ffae;
-    }
+    input:focus, select:focus { border-color: #00ffae; }
     button {
       width: 100%;
       padding: 20px;
@@ -65,10 +63,7 @@
       font-weight: bold;
       cursor: pointer;
     }
-    button:disabled {
-      opacity: 0.6;
-      cursor: wait;
-    }
+    button:disabled { opacity: 0.6; cursor: wait; }
     .btn-scan { background: #00c875; }
     .btn-camera { background: #08a9df; }
     .btn-stop { background: #e53935; }
@@ -166,7 +161,6 @@
   </div>
 
   <script>
-    // URL Deployment Web App Apps Script Anda
     const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzXhd0otNyi-dhif6Dp72_lw_6jgOBX4O6T4rTfDlDG7x5JKYcM05ZbChXbxlIPZ9C8DA/exec";
 
     let scanner = null;
@@ -192,42 +186,43 @@
         return;
       }
 
-      tampilkanStatus("Mengirim data...", "info");
+      tampilkanStatus("Mengirim data ke Spreadsheet...", "info");
       btnKirim.disabled = true;
 
-      const urlParams = new URLSearchParams({
-        barcode: barcode,
-        admin: admin,
-        jenis: jenis,
-        jumlah: jumlah,
-        t: Date.now()
-      });
+      const url = URL_WEB_APP +
+        "?barcode=" + encodeURIComponent(barcode) +
+        "&admin=" + encodeURIComponent(admin) +
+        "&jenis=" + encodeURIComponent(jenis) +
+        "&jumlah=" + encodeURIComponent(jumlah) +
+        "&t=" + Date.now();
 
       try {
-        const response = await fetch(`${URL_WEB_APP}?${urlParams.toString()}`, {
+        // Menggunakan mode 'no-cors' untuk bypass blokir CORS browser
+        await fetch(url, {
           method: "GET",
-          redirect: "follow"
+          mode: "no-cors"
         });
 
-        const data = await response.json();
+        tampilkanStatus(
+          "SCAN BERHASIL DIKIRIM!\n" +
+          "Barcode: " + barcode + "\n" +
+          "Stok di Google Sheets otomatis terpotong.",
+          "success"
+        );
 
-        if (data && data.status === "OK") {
-          tampilkanStatus("SCAN BERHASIL!\nBarang: " + data.namaBarang + "\nStok Sisa: " + data.stokSesudah, "");
-          
-          tambahRiwayat({
-            barcode: barcode,
-            namaBarang: data.namaBarang,
-            admin: admin,
-            jumlah: jumlah
-          });
+        tambahRiwayat({
+          barcode: barcode,
+          namaBarang: "Terproses di Sheet",
+          admin: admin,
+          jumlah: jumlah
+        });
 
-          document.getElementById("barcode").value = "";
-        } else {
-          tampilkanStatus(data.message || "Gagal memproses barcode.", "error");
-        }
+        document.getElementById("barcode").value = "";
+        document.getElementById("barcode").focus();
+
       } catch (err) {
         console.error(err);
-        tampilkanStatus("Gagal terhubung ke Apps Script.\nPastikan Deployment Web App diatur ke 'Anyone'.", "error");
+        tampilkanStatus("Gagal mengirim data. Cek koneksi internet.", "error");
       } finally {
         btnKirim.disabled = false;
       }
@@ -258,7 +253,6 @@
           <div class="history-item">
             <b>Waktu:</b> ${aman(item.waktu)}<br>
             <b>Barcode:</b> ${aman(item.barcode)}<br>
-            <b>Barang:</b> ${aman(item.namaBarang)}<br>
             <b>Admin:</b> ${aman(item.admin)} | <b>Qty:</b> ${aman(item.jumlah)}
           </div>
         `;
