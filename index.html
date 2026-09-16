@@ -166,7 +166,7 @@
   </div>
 
   <script>
-    // GANTI URL INI DENGAN URL DEPLOYMENT BARU ANDA (akhiran /exec)
+    // URL Deployment Web App Apps Script Anda
     const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzXhd0otNyi-dhif6Dp72_lw_6jgOBX4O6T4rTfDlDG7x5JKYcM05ZbChXbxlIPZ9C8DA/exec";
 
     let scanner = null;
@@ -180,58 +180,64 @@
       if (tipe) status.classList.add(tipe);
     }
 
-    function kirimScan() {
-  const barcode = document.getElementById("barcode").value.trim();
-  const admin = document.getElementById("admin").value.trim() || "ADMIN";
-  const jenis = document.getElementById("jenis").value;
-  const jumlah = Number(document.getElementById("jumlah").value || 1);
+    async function kirimScan() {
+      const barcode = document.getElementById("barcode").value.trim();
+      const admin = document.getElementById("admin").value.trim() || "ADMIN";
+      const jenis = document.getElementById("jenis").value;
+      const jumlah = Number(document.getElementById("jumlah").value || 1);
+      const btnKirim = document.getElementById("btnKirim");
 
-  if (!barcode) {
-    tampilkanStatus("Barcode belum diisi.", "warning");
-    return;
-  }
+      if (!barcode) {
+        tampilkanStatus("Barcode belum diisi.", "warning");
+        return;
+      }
 
-  // Buat URL dengan callback hasilScanGoogle
-  const url = URL_WEB_APP +
-    "?barcode=" + encodeURIComponent(barcode) +
-    "&admin=" + encodeURIComponent(admin) +
-    "&jenis=" + encodeURIComponent(jenis) +
-    "&jumlah=" + encodeURIComponent(jumlah) +
-    "&callback=hasilScanGoogle" +
-    "&t=" + Date.now();
+      tampilkanStatus("Mengirim data...", "info");
+      btnKirim.disabled = true;
 
-  tampilkanStatus("Mengirim data...", "info");
+      const urlParams = new URLSearchParams({
+        barcode: barcode,
+        admin: admin,
+        jenis: jenis,
+        jumlah: jumlah,
+        t: Date.now()
+      });
 
-  // Hapus script lama jika ada
-  const scriptLama = document.getElementById("jsonpScript");
-  if (scriptLama) scriptLama.remove();
+      try {
+        const response = await fetch(`${URL_WEB_APP}?${urlParams.toString()}`, {
+          method: "GET",
+          redirect: "follow"
+        });
 
-  // Panggil via JSONP
-  const script = document.createElement("script");
-  script.id = "jsonpScript";
-  script.src = url;
-  script.onerror = function() {
-    tampilkanStatus("Gagal terhubung ke Apps Script. Cek koneksi internet.", "error");
-  };
-  document.body.appendChild(script);
-}
+        const data = await response.json();
 
-// FUNGSI INI WAJIB ADA UNTUK MENERIMA BALASAN
-window.hasilScanGoogle = function(data) {
-  if (data && data.status === "OK") {
-    tampilkanStatus("SCAN BERHASIL!\nBarang: " + data.namaBarang + "\nStok Sisa: " + data.stokSesudah, "success");
-    document.getElementById("barcode").value = "";
-  } else {
-    tampilkanStatus(data.message || "Gagal memproses barcode.", "error");
-  }
-};
+        if (data && data.status === "OK") {
+          tampilkanStatus("SCAN BERHASIL!\nBarang: " + data.namaBarang + "\nStok Sisa: " + data.stokSesudah, "");
+          
+          tambahRiwayat({
+            barcode: barcode,
+            namaBarang: data.namaBarang,
+            admin: admin,
+            jumlah: jumlah
+          });
+
+          document.getElementById("barcode").value = "";
+        } else {
+          tampilkanStatus(data.message || "Gagal memproses barcode.", "error");
+        }
+      } catch (err) {
+        console.error(err);
+        tampilkanStatus("Gagal terhubung ke Apps Script.\nPastikan Deployment Web App diatur ke 'Anyone'.", "error");
+      } finally {
+        btnKirim.disabled = false;
+      }
+    }
 
     function tambahRiwayat(data) {
       riwayat.unshift({
         waktu: new Date().toLocaleTimeString("id-ID"),
         barcode: data.barcode || "-",
         namaBarang: data.namaBarang || "-",
-        kategori: data.kategori || "-",
         admin: data.admin || "-",
         jumlah: data.jumlah || 1
       });
