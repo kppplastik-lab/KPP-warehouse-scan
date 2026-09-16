@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Scan Warehouse</title>
 
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 12px;
@@ -20,20 +16,17 @@
       color: white;
       font-family: Arial, sans-serif;
     }
-
     .container {
       width: 100%;
       max-width: 680px;
       margin: auto;
     }
-
     h1 {
       text-align: center;
       color: #00aeef;
       font-size: 32px;
       margin: 15px 0 25px;
     }
-
     .box {
       background: #073346;
       border: 3px solid #00a9e0;
@@ -41,7 +34,6 @@
       padding: 25px;
       margin-bottom: 25px;
     }
-
     label {
       display: block;
       margin-top: 18px;
@@ -49,9 +41,7 @@
       font-size: 23px;
       font-weight: bold;
     }
-
-    input,
-    select {
+    input, select {
       width: 100%;
       padding: 18px;
       border: 3px solid #00a9e0;
@@ -61,12 +51,9 @@
       font-size: 22px;
       outline: none;
     }
-
-    input:focus,
-    select:focus {
+    input:focus, select:focus {
       border-color: #00ffae;
     }
-
     button {
       width: 100%;
       padding: 20px;
@@ -78,24 +65,13 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     button:disabled {
       opacity: 0.6;
       cursor: wait;
     }
-
-    .btn-scan {
-      background: #00c875;
-    }
-
-    .btn-camera {
-      background: #08a9df;
-    }
-
-    .btn-stop {
-      background: #e53935;
-    }
-
+    .btn-scan { background: #00c875; }
+    .btn-camera { background: #08a9df; }
+    .btn-stop { background: #e53935; }
     #reader {
       display: none;
       width: 100%;
@@ -105,7 +81,6 @@
       background: white;
       overflow: hidden;
     }
-
     .status {
       margin-top: 20px;
       padding: 18px;
@@ -117,16 +92,9 @@
       line-height: 1.5;
       white-space: pre-line;
     }
-
-    .status.error {
-      background: #641d27;
-      border-color: #ff6675;
-    }
-
-    .status.warning {
-      background: #614b08;
-      border-color: #ffd43b;
-    }
+    .status.error { background: #641d27; border-color: #ff6675; }
+    .status.warning { background: #614b08; border-color: #ffd43b; }
+    .status.info { background: #0c4a60; border-color: #00a9e0; }
 
     .history-title {
       color: #00aeef;
@@ -135,7 +103,6 @@
       line-height: 1.3;
       margin-bottom: 20px;
     }
-
     .history-item {
       background: #031d2b;
       border: 1px solid #087da5;
@@ -145,109 +112,41 @@
       font-size: 17px;
       line-height: 1.7;
     }
-
-    .empty {
-      color: #dddddd;
-      font-size: 19px;
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 8px;
-      }
-
-      .box {
-        padding: 18px;
-        border-radius: 24px;
-      }
-
-      h1 {
-        font-size: 27px;
-      }
-
-      label {
-        font-size: 21px;
-      }
-
-      input,
-      select {
-        font-size: 20px;
-      }
-
-      button {
-        font-size: 20px;
-      }
-    }
+    .empty { color: #dddddd; font-size: 19px; }
   </style>
 </head>
-
 <body>
 
   <div class="container">
-
     <h1>SCAN WAREHOUSE</h1>
 
     <div class="box">
-
       <label for="jenis">Jenis Barang</label>
-
       <select id="jenis">
         <option value="MATERIAL">MATERIAL</option>
         <option value="ALAT">ALAT</option>
         <option value="FILM">FILM</option>
+        <option value="MOTIF">MOTIF</option>
       </select>
 
       <label for="admin">Nama Admin</label>
-
-      <input
-        type="text"
-        id="admin"
-        value="Adm"
-        placeholder="Masukkan nama admin"
-      >
+      <input type="text" id="admin" value="Adm" placeholder="Masukkan nama admin">
 
       <label for="jumlah">Jumlah</label>
-
-      <input
-        type="number"
-        id="jumlah"
-        value="1"
-        min="1"
-      >
+      <input type="number" id="jumlah" value="1" min="1">
 
       <label for="barcode">Barcode</label>
+      <input type="text" id="barcode" placeholder="Scan atau ketik barcode" autocomplete="off">
 
-      <input
-        type="text"
-        id="barcode"
-        placeholder="Scan atau ketik barcode"
-        autocomplete="off"
-      >
-
-      <button
-        type="button"
-        id="btnKirim"
-        class="btn-scan"
-        onclick="kirimScan()"
-      >
+      <button type="button" id="btnKirim" class="btn-scan" onclick="kirimScan()">
         SCAN BARCODE
       </button>
 
-      <button
-        type="button"
-        class="btn-camera"
-        onclick="bukaScanner()"
-      >
+      <button type="button" class="btn-camera" onclick="bukaScanner()">
         FOKUS SCANNER
       </button>
 
-      <button
-        type="button"
-        id="btnStop"
-        class="btn-stop"
-        onclick="tutupScanner()"
-        style="display: none;"
-      >
+      <button type="button" id="btnStop" class="btn-stop" onclick="tutupScanner()" style="display: none;">
         TUTUP SCANNER
       </button>
 
@@ -256,207 +155,198 @@
       <div id="status" class="status">
         Siap melakukan scan barcode.
       </div>
-
     </div>
 
     <div class="box">
-
-      <div class="history-title">
-        RIWAYAT SCAN SEMENTARA
-      </div>
-
+      <div class="history-title">RIWAYAT SCAN SEMENTARA</div>
       <div id="history">
         <div class="empty">Belum ada scan.</div>
       </div>
-
     </div>
-
   </div>
 
   <script>
-  const URL_WEB_APP =
-  "https://script.google.com/macros/s/AKfycbyM5g2gyjrG-DPWaFvYOYladPbA_7K9wvxED-ECZjtN21j9eABysY1_R-vZBFE8JyNT/exec";
+    // GANTI URL INI DENGAN URL DEPLOYMENT BARU ANDA (akhiran /exec)
+    const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbyM5g2gyjrG-DPWaFvYOYladPbA_7K9wvxED-ECZjtN21j9eABysY1_R-vZBFE8JyNT/exec";
 
-  let scanner = null;
-  let sedangScan = false;
-  let riwayat = [];
+    let scanner = null;
+    let sedangScan = false;
+    let riwayat = [];
 
-  function tampilkanStatus(pesan, tipe = "") {
-    const status = document.getElementById("status");
-    status.textContent = pesan;
-    status.className = "status";
-    if (tipe) status.classList.add(tipe);
-  }
-
-  // Kirim scan menggunakan JSONP
-function kirimScan() {
-  const barcode = document.getElementById("barcode").value.trim();
-  const admin = document.getElementById("admin").value.trim() || "ADMIN";
-  const jenis = document.getElementById("jenis").value;
-  const jumlah = Number(document.getElementById("jumlah").value || 1);
-
-  if (!barcode) {
-    tampilkanStatus("Barcode belum diisi.", "warning");
-    return;
-  }
-
-  const tombol = document.getElementById("btnKirim");
-  if (tombol) tombol.disabled = true;
-
-  // Buat URL JSONP
-  const url = URL_WEB_APP +
-    "?barcode=" + encodeURIComponent(barcode) +
-    "&admin=" + encodeURIComponent(admin) +
-    "&jenis=" + encodeURIComponent(jenis) +
-    "&jumlah=" + encodeURIComponent(jumlah) +
-    "&callback=hasilScanGoogle" +
-    "&t=" + Date.now();
-
-  tampilkanStatus("Mengirim data scan...", "info");
-
-  // Hapus script lama jika ada
-  const scriptLama = document.getElementById("jsonpScan");
-  if (scriptLama) scriptLama.remove();
-
-  // Inject script baru ke DOM
-  const script = document.createElement("script");
-  script.id = "jsonpScan";
-  script.src = url;
-
-  script.onerror = function() {
-    if (tombol) tombol.disabled = false;
-    tampilkanStatus("Gagal memuat respons Apps Script.", "error");
-  };
-
-  document.body.appendChild(script);
-}
-
-// Handler penerima hasil dari Apps Script (HANYA PAKAI SATU INI)
-window.hasilScanGoogle = function (data) {
-  const tombol = document.getElementById("btnKirim");
-  if (tombol) tombol.disabled = false;
-
-  if (data && data.status === "OK") {
-    tampilkanStatus(
-      "SCAN BERHASIL!\n" +
-      "Nama Barang: " + data.namaBarang + "\n" +
-      "Stok Sisa: " + data.stokSesudah,
-      "success"
-    );
-
-    // Tambah ke riwayat tampilan web
-    tambahRiwayat({
-      barcode: document.getElementById("barcode").value,
-      namaBarang: data.namaBarang,
-      kategori: document.getElementById("jenis").value,
-      admin: document.getElementById("admin").value || "ADMIN",
-      jumlah: document.getElementById("jumlah").value
-    });
-
-    // Reset kolom barcode agar siap scan berikutnya
-    document.getElementById("barcode").value = "";
-    document.getElementById("barcode").focus();
-  } else {
-    tampilkanStatus(
-      data && data.message ? data.message : "Gagal memproses transaksi.",
-      "error"
-    );
-  }
-};
-
-  function tambahRiwayat(data) {
-    riwayat.unshift({
-      waktu: new Date().toLocaleTimeString("id-ID"),
-      barcode: data.barcode || "-",
-      namaBarang: data.namaBarang || "-",
-      kategori: data.kategori || "-",
-      admin: data.admin || "-",
-      jumlah: data.jumlah || 1
-    });
-
-    if (riwayat.length > 20) riwayat = riwayat.slice(0, 20);
-    tampilkanRiwayat();
-  }
-
-  function tampilkanRiwayat() {
-    const history = document.getElementById("history");
-    if (riwayat.length === 0) {
-      history.innerHTML = '<div class="empty">Belum ada scan.</div>';
-      return;
+    function tampilkanStatus(pesan, tipe = "") {
+      const status = document.getElementById("status");
+      status.textContent = pesan;
+      status.className = "status";
+      if (tipe) status.classList.add(tipe);
     }
 
-    history.innerHTML = riwayat.map(function (item) {
-      return `
-        <div class="history-item">
-          <b>Waktu:</b> ${aman(item.waktu)}<br>
-          <b>Barcode:</b> ${aman(item.barcode)}<br>
-          <b>Barang:</b> ${aman(item.namaBarang)}<br>
-          <b>Admin:</b> ${aman(item.admin)} | <b>Qty:</b> ${aman(item.jumlah)}
-        </div>
-      `;
-    }).join("");
-  }
+    function kirimScan() {
+      const barcode = document.getElementById("barcode").value.trim();
+      const admin = document.getElementById("admin").value.trim() || "ADMIN";
+      const jenis = document.getElementById("jenis").value;
+      const jumlah = Number(document.getElementById("jumlah").value || 1);
 
-  function aman(nilai) {
-    return String(nilai)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
+      if (!barcode) {
+        tampilkanStatus("Barcode belum diisi.", "warning");
+        return;
+      }
 
-  function bukaScanner() {
-    const reader = document.getElementById("reader");
-    const btnStop = document.getElementById("btnStop");
+      const tombol = document.getElementById("btnKirim");
+      if (tombol) tombol.disabled = true;
 
-    if (sedangScan) return;
+      const url = URL_WEB_APP +
+        "?barcode=" + encodeURIComponent(barcode) +
+        "&admin=" + encodeURIComponent(admin) +
+        "&jenis=" + encodeURIComponent(jenis) +
+        "&jumlah=" + encodeURIComponent(jumlah) +
+        "&callback=hasilScanGoogle" +
+        "&t=" + Date.now();
 
-    reader.style.display = "block";
-    btnStop.style.display = "block";
+      tampilkanStatus("Mengirim data scan...", "info");
 
-    scanner = new Html5Qrcode("reader");
-    sedangScan = true;
+      // Hapus tag script lama jika ada
+      const scriptLama = document.getElementById("jsonpScan");
+      if (scriptLama) scriptLama.remove();
 
-    scanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 150 } },
-      function (hasilBarcode) {
-        document.getElementById("barcode").value = hasilBarcode;
-        tutupScanner();
-        kirimScan(); // Otomatis kirim saat ter-scan
-      },
-      function () {}
-    ).catch(function (error) {
+      // Buat tag script baru (JSONP)
+      const script = document.createElement("script");
+      script.id = "jsonpScan";
+      script.src = url;
+
+      script.onerror = function() {
+        if (tombol) tombol.disabled = false;
+        tampilkanStatus(
+          "Gagal memuat respons Apps Script.\nPastikan Anda sudah 'Deploy As New Deployment' dengan akses 'Anyone'.",
+          "error"
+        );
+      };
+
+      document.body.appendChild(script);
+    }
+
+    // Function penerima respons (Callback dari Google Apps Script)
+    window.hasilScanGoogle = function (data) {
+      const tombol = document.getElementById("btnKirim");
+      if (tombol) tombol.disabled = false;
+
+      if (data && data.status === "OK") {
+        tampilkanStatus(
+          "SCAN BERHASIL!\n" +
+          "Barang: " + data.namaBarang + "\n" +
+          "Stok Sisa: " + data.stokSesudah,
+          "success"
+        );
+
+        tambahRiwayat({
+          barcode: document.getElementById("barcode").value,
+          namaBarang: data.namaBarang,
+          kategori: document.getElementById("jenis").value,
+          admin: document.getElementById("admin").value || "ADMIN",
+          jumlah: document.getElementById("jumlah").value
+        });
+
+        // Reset kolom input barcode
+        document.getElementById("barcode").value = "";
+        document.getElementById("barcode").focus();
+      } else {
+        tampilkanStatus(
+          data && data.message ? data.message : "Data tidak berhasil diproses.",
+          "error"
+        );
+      }
+    };
+
+    function tambahRiwayat(data) {
+      riwayat.unshift({
+        waktu: new Date().toLocaleTimeString("id-ID"),
+        barcode: data.barcode || "-",
+        namaBarang: data.namaBarang || "-",
+        kategori: data.kategori || "-",
+        admin: data.admin || "-",
+        jumlah: data.jumlah || 1
+      });
+
+      if (riwayat.length > 20) riwayat = riwayat.slice(0, 20);
+      tampilkanRiwayat();
+    }
+
+    function tampilkanRiwayat() {
+      const history = document.getElementById("history");
+      if (riwayat.length === 0) {
+        history.innerHTML = '<div class="empty">Belum ada scan.</div>';
+        return;
+      }
+
+      history.innerHTML = riwayat.map(function (item) {
+        return `
+          <div class="history-item">
+            <b>Waktu:</b> ${aman(item.waktu)}<br>
+            <b>Barcode:</b> ${aman(item.barcode)}<br>
+            <b>Barang:</b> ${aman(item.namaBarang)}<br>
+            <b>Admin:</b> ${aman(item.admin)} | <b>Qty:</b> ${aman(item.jumlah)}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function aman(nilai) {
+      return String(nilai)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function bukaScanner() {
+      const reader = document.getElementById("reader");
+      const btnStop = document.getElementById("btnStop");
+
+      if (sedangScan) return;
+
+      reader.style.display = "block";
+      btnStop.style.display = "block";
+
+      scanner = new Html5Qrcode("reader");
+      sedangScan = true;
+
+      scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 150 } },
+        function (hasilBarcode) {
+          document.getElementById("barcode").value = hasilBarcode;
+          tutupScanner();
+          kirimScan();
+        },
+        function () {}
+      ).catch(function (error) {
+        sedangScan = false;
+        reader.style.display = "none";
+        btnStop.style.display = "none";
+        tampilkanStatus("Kamera tidak dapat dibuka.\n" + error, "error");
+      });
+    }
+
+    function tutupScanner() {
+      const reader = document.getElementById("reader");
+      const btnStop = document.getElementById("btnStop");
+
+      if (scanner && sedangScan) {
+        scanner.stop().then(() => scanner.clear()).catch(() => {});
+      }
+
+      scanner = null;
       sedangScan = false;
       reader.style.display = "none";
       btnStop.style.display = "none";
-      tampilkanStatus("Kamera tidak dapat dibuka.\n" + error, "error");
+    }
+
+    document.getElementById("barcode").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        kirimScan();
+      }
     });
-  }
-
-  function tutupScanner() {
-    const reader = document.getElementById("reader");
-    const btnStop = document.getElementById("btnStop");
-
-    if (scanner && sedangScan) {
-      scanner.stop().then(() => scanner.clear()).catch(() => {});
-    }
-
-    scanner = null;
-    sedangScan = false;
-    reader.style.display = "none";
-    btnStop.style.display = "none";
-  }
-
-  document.getElementById("barcode").addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      kirimScan();
-    }
-  });
-</script>
   </script>
-
 </body>
 </html>
