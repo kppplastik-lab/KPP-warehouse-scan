@@ -277,6 +277,26 @@
 const URL_WEB_APP =
   "https://script.google.com/macros/s/AKfycbyM5g2gyjrG-DPWaFvYOYladPbA_7K9wvxED-ECZjtN21j9eABysY1_R-vZBFE8JyNT/exec";
 
+async function tesKoneksiAppsScript() {
+  try {
+    const response = await fetch(API_URL + '?action=tes', {
+      method: 'GET',
+      redirect: 'follow'
+    });
+
+    const teks = await response.text();
+
+    console.log('Status:', response.status);
+    console.log('Respons Apps Script:', teks);
+
+    alert('Respons Apps Script:\n' + teks);
+
+  } catch (error) {
+    console.error('Error koneksi:', error);
+    alert('Gagal koneksi: ' + error.message);
+  }
+}
+    
     let scanner = null;
     let sedangScan = false;
     let riwayat = [];
