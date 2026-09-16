@@ -274,7 +274,8 @@
   </div>
 
   <script>
-  const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbyJWGLacOvIfFGTW9A4PeLuXk8Glp8JCYreQEzGXfySFf_HSo01-sQm0SkyD3pwjxg/exec";
+  const URL_WEB_APP =
+  "https://script.google.com/macros/s/AKfycbyM5g2gyjrG-DPWaFvYOYladPbA_7K9wvxED-ECZjtN21j9eABysY1_R-vZBFE8JyNT/exec";
 
   let scanner = null;
   let sedangScan = false;
@@ -287,75 +288,81 @@
     if (tipe) status.classList.add(tipe);
   }
 
-  function kirimScan() {
-    const barcode = document.getElementById("barcode").value.trim();
-    const admin = document.getElementById("admin").value.trim() || "ADMIN";
-    const jenis = document.getElementById("jenis").value;
-    const jumlah = Number(document.getElementById("jumlah").value || 1);
+  // Kirim scan menggunakan JSONP
+function kirimScan() {
+  const barcode = document.getElementById("barcode").value.trim();
+  const admin = document.getElementById("admin").value.trim() || "ADMIN";
+  const jenis = document.getElementById("jenis").value;
+  const jumlah = Number(document.getElementById("jumlah").value || 1);
 
-    if (!barcode) {
-      tampilkanStatus("Barcode belum diisi.", "warning");
-      return;
-    }
-
-    const tombol = document.getElementById("btnKirim");
-    if (tombol) tombol.disabled = true;
-
-    const url = URL_WEB_APP +
-      "?barcode=" + encodeURIComponent(barcode) +
-      "&admin=" + encodeURIComponent(admin) +
-      "&jenis=" + encodeURIComponent(jenis) +
-      "&jumlah=" + encodeURIComponent(jumlah) +
-      "&callback=hasilScanGoogle" +
-      "&t=" + Date.now();
-
-    tampilkanStatus("Mengirim data scan...", "info");
-
-    const scriptLama = document.getElementById("jsonpScan");
-    if (scriptLama) scriptLama.remove();
-
-    const script = document.createElement("script");
-    script.id = "jsonpScan";
-    script.src = url;
-
-    script.onerror = function() {
-      if (tombol) tombol.disabled = false;
-      tampilkanStatus("Gagal memuat respons Apps Script. Pastikan Web App sudah Deploy Ulang sebagai versi BARU.", "error");
-    };
-
-    document.body.appendChild(script);
+  if (!barcode) {
+    tampilkanStatus("Barcode belum diisi.", "warning");
+    return;
   }
 
-  // Callback dari Apps Script
-  window.hasilScanGoogle = function (data) {
-    const tombol = document.getElementById("btnKirim");
+  const tombol = document.getElementById("btnKirim");
+  if (tombol) tombol.disabled = true;
+
+  // Buat URL JSONP
+  const url = URL_WEB_APP +
+    "?barcode=" + encodeURIComponent(barcode) +
+    "&admin=" + encodeURIComponent(admin) +
+    "&jenis=" + encodeURIComponent(jenis) +
+    "&jumlah=" + encodeURIComponent(jumlah) +
+    "&callback=hasilScanGoogle" +
+    "&t=" + Date.now();
+
+  tampilkanStatus("Mengirim data scan...", "info");
+
+  // Hapus script lama jika ada
+  const scriptLama = document.getElementById("jsonpScan");
+  if (scriptLama) scriptLama.remove();
+
+  // Inject script baru ke DOM
+  const script = document.createElement("script");
+  script.id = "jsonpScan";
+  script.src = url;
+
+  script.onerror = function() {
     if (tombol) tombol.disabled = false;
-
-    if (data && data.status === "OK") {
-      tampilkanStatus(
-        "SCAN BERHASIL!\n" +
-        "Barang: " + data.namaBarang + "\n" +
-        "Stok Sisa: " + data.stokSesudah,
-        "success"
-      );
-
-      tambahRiwayat({
-        barcode: document.getElementById("barcode").value,
-        namaBarang: data.namaBarang,
-        kategori: document.getElementById("jenis").value,
-        admin: document.getElementById("admin").value || "ADMIN",
-        jumlah: document.getElementById("jumlah").value
-      });
-
-      // Clear input barcode setelah sukses
-      document.getElementById("barcode").value = "";
-    } else {
-      tampilkanStatus(
-        data && data.message ? data.message : "Gagal memproses transaksi.",
-        "error"
-      );
-    }
+    tampilkanStatus("Gagal memuat respons Apps Script.", "error");
   };
+
+  document.body.appendChild(script);
+}
+
+// Handler penerima hasil dari Apps Script (HANYA PAKAI SATU INI)
+window.hasilScanGoogle = function (data) {
+  const tombol = document.getElementById("btnKirim");
+  if (tombol) tombol.disabled = false;
+
+  if (data && data.status === "OK") {
+    tampilkanStatus(
+      "SCAN BERHASIL!\n" +
+      "Nama Barang: " + data.namaBarang + "\n" +
+      "Stok Sisa: " + data.stokSesudah,
+      "success"
+    );
+
+    // Tambah ke riwayat tampilan web
+    tambahRiwayat({
+      barcode: document.getElementById("barcode").value,
+      namaBarang: data.namaBarang,
+      kategori: document.getElementById("jenis").value,
+      admin: document.getElementById("admin").value || "ADMIN",
+      jumlah: document.getElementById("jumlah").value
+    });
+
+    // Reset kolom barcode agar siap scan berikutnya
+    document.getElementById("barcode").value = "";
+    document.getElementById("barcode").focus();
+  } else {
+    tampilkanStatus(
+      data && data.message ? data.message : "Gagal memproses transaksi.",
+      "error"
+    );
+  }
+};
 
   function tambahRiwayat(data) {
     riwayat.unshift({
